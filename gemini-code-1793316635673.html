@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TDM MOTORSPORT - Formula 5 Internal Platform</title>
+    <!-- Stylesheets & Fonts -->
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- FullCalendar -->
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+    <!-- PapaParse for CSV handling -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+
+    <!-- Top Navigation Header -->
+    <header class="app-header">
+        <div class="header-brand">
+            <div class="logo-placeholder school-logo" id="schoolLogo">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>School Logo</span>
+            </div>
+            <div class="brand-divider"></div>
+            <div class="logo-placeholder team-logo" id="teamLogo">
+                <i class="fa-solid fa-flag-checkered"></i>
+                <span>TDM Logo</span>
+            </div>
+            <div class="brand-title">
+                <h1>TDM MOTORSPORT</h1>
+                <span class="sub-title">Formula 5 Engineering Hub</span>
+            </div>
+        </div>
+
+        <div class="header-auth">
+            <div class="user-session-info" id="sessionInfo">
+                <span class="role-badge guest" id="roleBadge">GUEST MODE</span>
+                <span class="username-display" id="usernameDisplay">Public Access</span>
+            </div>
+            <button class="btn btn-primary" id="loginBtn" onclick="toggleAuthModal()">
+                <i class="fa-solid fa-right-to-bracket"></i> Authenticate
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-section="overview-section" onclick="switchSection('overview-section')">
+                    <i class="fa-solid fa-house-chimney"></i> <span>Team Overview</span>
+                </a>
+                <a href="#" class="nav-item private-route" data-section="docs-section" onclick="switchSection('docs-section')">
+                    <i class="fa-solid fa-file-lines"></i> <span>Technical Docs</span>
+                </a>
+                <a href="#" class="nav-item private-route" data-section="systems-section" onclick="switchSection('systems-section')">
+                    <i class="fa-solid fa-car-side"></i> <span>Car Systems</span>
+                </a>
+                <a href="#" class="nav-item private-route" data-section="tasks-section" onclick="switchSection('tasks-section')">
+                    <i class="fa-solid fa-list-check"></i> <span>Tasks & Timeline</span>
+                </a>
+                <a href="#" class="nav-item private-route" data-section="inventory-section" onclick="switchSection('inventory-section')">
+                    <i class="fa-solid fa-boxes-stacked"></i> <span>Inventory</span>
+                </a>
+                <a href="#" class="nav-item private-route admin-only" data-section="admin-section" onclick="switchSection('admin-section')">
+                    <i class="fa-solid fa-user-gear"></i> <span>Admin & Dev Hub</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <p>TDM Motorsport © 2026</p>
+                <small>Formula 5 Telemetry v2.4</small>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="app-content">
+
+            <!-- SECTION 1: Team Overview (Public Viewable) -->
+            <section id="overview-section" class="content-section active">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-users"></i> Team Overview & Presentation</h2>
+                    <button class="btn btn-secondary editor-only" onclick="toggleEditTeamStory()">
+                        <i class="fa-solid fa-pen-to-square"></i> Edit Story & Info
+                    </button>
+                </div>
+
+                <!-- Mission / Vision / History Block -->
+                <div class="card mb-4" id="teamStoryCard">
+                    <div class="card-body">
+                        <div id="storyDisplay">
+                            <h3>Mission & Vision</h3>
+                            <p id="missionText">Engineering high-performance Formula 5 racing vehicles through rigorous technological innovation, precise mechanical design, and seamless team collaboration.</p>
+                            <h3>Team History</h3>
+                            <p id="historyText">Founded in 2022, TDM Motorsport represents the peak of collegiate automotive engineering, competing in national championship series with custom-built chassis and advanced powertrain telemetry.</p>
+                        </div>
+                        <div id="storyEditor" class="hidden">
+                            <label>Edit Mission & Vision:</label>
+                            <textarea id="missionInput" class="form-control mb-2" rows="3"></textarea>
+                            <label>Edit Team History:</label>
+                            <textarea id="historyInput" class="form-control mb-2" rows="3"></textarea>
+                            <button class="btn btn-primary" onclick="saveTeamStory()">Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Team Roster -->
+                <div class="d-flex justify-between align-center mb-3">
+                    <h3>Engineering Roster</h3>
+                    <button class="btn btn-primary editor-only" onclick="openRosterModal()">
+                        <i class="fa-solid fa-plus"></i> Add Member
+                    </button>
+                </div>
+                <div class="grid grid-3" id="rosterGrid">
+                    <!-- Dynamic Member Cards Inserted Here -->
+                </div>
+            </section>
+
+            <!-- SECTION 2: Technical Documents (Private) -->
+            <section id="docs-section" class="content-section private-route">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-folder-open"></i> Technical Document Repository</h2>
+                    <button class="btn btn-primary editor-only" onclick="openUploadDocModal()">
+                        <i class="fa-solid fa-upload"></i> Upload Document
+                    </button>
+                </div>
+
+                <!-- Document Filter Bar -->
+                <div class="card mb-4">
+                    <div class="card-body d-flex gap-3 align-center">
+                        <label><strong>Filter by Vehicle System:</strong></label>
+                        <select id="docSystemFilter" class="form-control width-auto" onchange="filterDocuments()">
+                            <option value="ALL">All Systems</option>
+                            <option value="Chasis">Chasis</option>
+                            <option value="Powertrain">Powertrain / Motor</option>
+                            <option value="Suspension">Suspension</option>
+                            <option value="Aerodynamics">Aerodynamics</option>
+                            <option value="Electronics">Electronics & Telemetry</option>
+                            <option value="General">General / Safety</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Documents Data Table -->
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="data-table" id="docsTable">
+                            <thead>
+                                <tr>
+                                    <th>Document Title</th>
+                                    <th>Format</th>
+                                    <th>System Tag</th>
+                                    <th>Uploaded By</th>
+                                    <th>Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="docsTableBody">
+                                <!-- Dynamic Document Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 3: Car Systems (Private) -->
+            <section id="systems-section" class="content-section private-route">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-microchip"></i> Car Systems & Components</h2>
+                    <button class="btn btn-primary editor-only" onclick="openAddSystemModal()">
+                        <i class="fa-solid fa-plus"></i> Add New System
+                    </button>
+                </div>
+                
+                <div class="grid grid-3" id="systemsGrid">
+                    <!-- Dynamic System Cards Inserted Here -->
+                </div>
+            </section>
+
+            <!-- SECTION 4: Tasks & Timeline (Private) -->
+            <section id="tasks-section" class="content-section private-route">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-chart-gantt"></i> Project Management & Telemetry</h2>
+                    <button class="btn btn-primary editor-only" onclick="openAddTaskModal()">
+                        <i class="fa-solid fa-plus"></i> Add New Task
+                    </button>
+                </div>
+
+                <!-- Analytics Dashboard Row -->
+                <div class="grid grid-2 mb-4">
+                    <div class="card">
+                        <div class="card-header">Weekly Sprint Performance</div>
+                        <div class="card-body">
+                            <canvas id="weeklyPerfChart" height="180"></canvas>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header">Gantt Work Breakdown Progress</div>
+                        <div class="card-body">
+                            <canvas id="ganttSimChart" height="180"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Calendar View -->
+                <div class="card mb-4">
+                    <div class="card-header">Milestone Calendar</div>
+                    <div class="card-body">
+                        <div id="calendarContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Tasks Data Table -->
+                <div class="card">
+                    <div class="card-header d-flex justify-between align-center">
+                        <span>Active Task Backlog</span>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="data-table" id="tasksTable">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Task Title</th>
+                                    <th>Assignee</th>
+                                    <th>Dates</th>
+                                    <th>Status</th>
+                                    <th>Completion</th>
+                                    <th class="editor-only">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tasksTableBody">
+                                <!-- Dynamic Task Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 5: Inventory (Private) -->
+            <section id="inventory-section" class="content-section private-route">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-warehouse"></i> Parts & Material Inventory</h2>
+                    <div class="btn-group editor-only">
+                        <button class="btn btn-secondary" onclick="exportInventoryCSV()">
+                            <i class="fa-solid fa-file-export"></i> Export CSV
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddInventoryModal()">
+                            <i class="fa-solid fa-plus"></i> Add Item
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="table-responsive">
+                        <table class="data-table" id="inventoryTable">
+                            <thead>
+                                <tr>
+                                    <th>Material / Component</th>
+                                    <th>Available Stock</th>
+                                    <th>Required Target</th>
+                                    <th>Status</th>
+                                    <th>Supplier</th>
+                                    <th class="editor-only">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventoryTableBody">
+                                <!-- Dynamic Inventory Rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECTION 6: Admin & Developer Portal (Admin Only) -->
+            <section id="admin-section" class="content-section private-route admin-only">
+                <div class="section-header">
+                    <h2><i class="fa-solid fa-sliders"></i> System Administration & Developer Hub</h2>
+                </div>
+
+                <div class="grid grid-2 mb-4">
+                    <!-- User Management Card -->
+                    <div class="card">
+                        <div class="card-header">User Permission Registry (CSV/XLSX)</div>
+                        <div class="card-body">
+                            <p class="text-sm mb-3">Upload a CSV file containing user handles. Columns required: <code>usuario</code>, <code>esAdmin</code>.</p>
+                            <input type="file" id="csvUserInput" accept=".csv" class="form-control mb-3">
+                            <div class="d-flex gap-2 mb-3">
+                                <input type="text" id="newUsername" placeholder="Username" class="form-control">
+                                <label class="d-flex align-center gap-1">
+                                    <input type="checkbox" id="newUserAdmin"> Admin?
+                                </label>
+                                <button class="btn btn-primary" onclick="addUserManual()">Add</button>
+                            </div>
+                            <div class="user-list-box" id="userListContainer">
+                                <!-- Authorized Users rendered here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Audit Log Card -->
+                    <div class="card">
+                        <div class="card-header">Live Audit & System Logs</div>
+                        <div class="card-body">
+                            <div class="audit-log-box" id="auditLogBox">
+                                <!-- Real-time audit events -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Integrated Developer Guide -->
+                <div class="card">
+                    <div class="card-header">Integrated Developer & API Integration Guide</div>
+                    <div class="card-body dev-guide-content">
+                        <h3>1. Database & CSV Schemas</h3>
+                        <p>Standard data schemas expected by the local stores or API endpoints:</p>
+                        <pre><code>// usuarios.csv
+usuario,esAdmin
+alex_tdm,true
+mario_eng,false
+
+// tareas.csv
+id,título,responsable,fechas,estado,porcentaje,notas
+TSK-101,Chassis TIG Welding,Carlos M.,2026-11-01,In Progress,65,Requires frame alignment
+
+// inventario.csv
+material,disponible,necesario,proveedor
+Carbon Fiber Prepreg (m2),12,50,Composite Solutions Ltd</code></pre>
+
+                        <h3 class="mt-4">2. REST API Endpoints Specifications</h3>
+                        <ul>
+                            <li><code>GET /api/usuarios</code> - Fetch all authorized team accounts.</li>
+                            <li><code>POST /api/archivos/upload</code> - Multipart upload for technical documentation.</li>
+                            <li><code>GET /api/sistemas</code> - Returns structured tree of car subsystems and component specs.</li>
+                            <li><code>PUT /api/inventario/:id</code> - Inline updating of current stock levels.</li>
+                        </ul>
+
+                        <h3 class="mt-4">3. Backend Integration Options</h3>
+                        <p><strong>Option A (Node.js/Express Server):</strong> Deploy Express App connecting to SQLite or PostgreSQL. Bind endpoints to local storage handlers.</p>
+                        <p><strong>Option B (Google Sheets API Integration):</strong> Connect Google Apps Script webhook listening for POST/GET payload to map rows dynamically.</p>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- MODAL 1: Authentication / Authorization -->
+    <div class="modal-overlay" id="authModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3>Authorize Session</h3>
+                <button class="close-btn" onclick="toggleAuthModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <p class="text-sm mb-3">Enter your registered username to verify editing permissions. (Default Admins: <code>admin</code>, <code>alex_tdm</code>)</p>
+                <div class="form-group mb-3">
+                    <label>Username Handle:</label>
+                    <input type="text" id="authUsernameInput" class="form-control" placeholder="e.g. alex_tdm">
+                </div>
+                <div class="alert alert-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Security Note: Client-side verification active. Switch to backend REST API authentication for production deployments.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="logout()">Clear Session</button>
+                <button class="btn btn-primary" onclick="authenticateUser()">Verify Access</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Component Spec Detail Viewer -->
+    <div class="modal-overlay" id="componentSpecModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="compSpecName">Component Specification</h3>
+                <button class="close-btn" onclick="closeComponentModal()">×</button>
+            </div>
+            <div class="modal-body" id="compSpecBody">
+                <!-- Dynamic Content injected via JS -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeComponentModal()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Generic Form Modal (Reusable) -->
+    <div class="modal-overlay" id="genericFormModal">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h3 id="genericModalTitle">Form</h3>
+                <button class="close-btn" onclick="closeGenericModal()">×</button>
+            </div>
+            <div class="modal-body" id="genericModalBody">
+                <!-- Injected forms -->
+            </div>
+            <div class="modal-footer" id="genericModalFooter">
+                <!-- Actions -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="script.js"></script>
+</body>
+</html>
